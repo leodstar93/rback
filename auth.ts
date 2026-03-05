@@ -3,14 +3,16 @@ import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import Google from "next-auth/providers/google";
+import { PrismaAdapter } from "@auth/prisma-adapter";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
+  adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
-    providers: [
-        Google({
-            clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-        }),
+  providers: [
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID ?? "",
+      clientSecret: process.env.AUTH_GOOGLE_SECRET ?? "",
+    }),
     Credentials({
       credentials: { email: {}, password: {} },
       async authorize(credentials) {
@@ -31,44 +33,99 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-  const userId = (user?.id as string) ?? token.sub;
-  console.log("JWT userId:", userId);
+    async signIn({ user, account, profile }) {
+      // Handle account linking for existing users
+      if (account && profile && user.email) {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email },
+          include: { accounts: true },
+        });
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: userId as string },
-    include: {
-      roles: {
-        select: {
-          role: {
-            select: {
-              name: true,
-              permissions: { select: { permission: { select: { key: true } } } },
+        if (existingUser) {
+          // Check if this OAuth account is already linked
+          const isLinked = existingUser.accounts.some(
+            (acc) =>
+              acc.provider === account.provider &&
+              acc.providerAccountId === account.providerAccountId,
+          );
+
+          if (!isLinked) {
+            // Link the OAuth account to the existing user
+            await prisma.account.create({
+              data: {
+                userId: existingUser.id,
+                type: account.type,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                access_token: account.access_token,
+                token_type: account.token_type,
+                scope: account.scope,
+                expires_at: account.expires_at,
+                refresh_token: account.refresh_token,
+                id_token: account.id_token,
+                session_state: account.session_state,
+              },
+            });
+          }
+
+          return true;
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, trigger }) {
+      // En signIn, NextAuth puede traer user.id
+      const userId = (user?.id as string) ?? (token.sub as string);
+      if (!userId) return token;
+
+      // Recarga desde DB cuando:
+      // - primer login (user existe)
+      // - o cuando llames session.update() (trigger === "update")
+      if (user || trigger === "update") {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            name: true, // ✅ IMPORTANTÍSIMO
+            email: true,
+            createdAt: true,
+            roles: {
+              select: {
+                role: {
+                  select: {
+                    name: true,
+                    permissions: {
+                      select: { permission: { select: { key: true } } },
+                    },
+                  },
+                },
+              },
             },
           },
-        },
-      },
+        });
+
+        const roles = dbUser?.roles?.map((ur) => ur.role.name) ?? [];
+        const permissions =
+          dbUser?.roles?.flatMap((ur) =>
+            (ur.role.permissions ?? []).map((rp) => rp.permission.key),
+          ) ?? [];
+
+        token.name = dbUser?.name ?? token.name; // ✅
+        token.email = dbUser?.email ?? token.email; // ✅
+        token.roles = roles;
+        token.permissions = Array.from(new Set(permissions));
+        token.createdAt = dbUser?.createdAt?.toISOString() ?? null;
+      }
+
+      return token;
     },
-  });
-
-  console.log("DB roles count:", dbUser?.roles?.length ?? 0);
-  console.log("DB roles:", dbUser?.roles?.map((r) => r.role.name));
-
-  const roles = dbUser?.roles?.map((ur) => ur.role.name) ?? [];
-  const permissions =
-    dbUser?.roles?.flatMap((ur) =>
-      (ur.role.permissions ?? []).map((rp) => rp.permission.key)
-    ) ?? [];
-
-  token.roles = roles;
-  token.permissions = Array.from(new Set(permissions));
-  return token;
-},
     async session({ session, token }) {
       // expone en session.user
       (session.user as any).id = token.sub;
+      (session.user as any).name = token.name;
+      (session.user as any).email = token.email;
       (session.user as any).roles = (token as any).roles ?? [];
       (session.user as any).permissions = (token as any).permissions ?? [];
+      (session.user as any).createdAt = (token as any).createdAt ?? null;
       return session;
     },
   },

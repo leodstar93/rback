@@ -35,7 +35,7 @@ export default function AdminRolesPage() {
       status === "authenticated" &&
       !session?.user?.roles?.includes("ADMIN")
     ) {
-      router.push("/dashboard");
+      router.push("/panel");
     }
   }, [status, session, router]);
 

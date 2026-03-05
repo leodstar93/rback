@@ -2,10 +2,11 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { NextRequest } from "next/server";
 
+
 // DELETE user
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
 
@@ -15,7 +16,7 @@ export async function DELETE(
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Don't allow deleting the last admin
     const adminRole = await prisma.role.findUnique({
@@ -27,14 +28,10 @@ export async function DELETE(
       where: { userId: id, role: { name: "ADMIN" } },
     });
 
-    if (
-      userRoles.length > 0 &&
-      adminRole &&
-      adminRole.users.length === 1
-    ) {
+    if (userRoles.length > 0 && adminRole && adminRole.users.length === 1) {
       return Response.json(
         { error: "Cannot delete the last admin user" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -53,7 +50,7 @@ export async function DELETE(
 // fetch single user
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
   if (!session?.user?.roles?.includes("ADMIN")) {
@@ -81,7 +78,7 @@ export async function GET(
 // UPDATE user roles
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
 
@@ -91,13 +88,13 @@ export async function PUT(
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const { roleIds } = await request.json();
 
     if (!Array.isArray(roleIds)) {
       return Response.json(
         { error: "Invalid roleIds format" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -129,7 +126,7 @@ export async function PUT(
     console.error("Error updating user roles:", error);
     return Response.json(
       { error: "Failed to update user roles" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

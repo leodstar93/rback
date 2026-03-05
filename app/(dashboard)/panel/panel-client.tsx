@@ -13,7 +13,8 @@ interface StatCard {
   href?: string;
 }
 
-export default function Dashboard() {
+export default function DashboardPage() {
+
   const { data: session, status } = useSession();
   const router = useRouter();
   const [stats, setStats] = useState<StatCard[]>([]);
@@ -37,13 +38,6 @@ export default function Dashboard() {
         // For now, we'll set up placeholder stats that you can customize
         const defaultStats: StatCard[] = [
           {
-            title: "Total Users",
-            value: "Loading...",
-            icon: "👥",
-            color: "bg-blue-500",
-            href: "/dashboard/users",
-          },
-          {
             title: "Active Sessions",
             value: "1",
             icon: "🔐",
@@ -54,7 +48,7 @@ export default function Dashboard() {
             value: session?.user?.roles?.length?.toString() || "0",
             icon: "🎭",
             color: "bg-purple-500",
-            href: "/admin/roles",
+            href: "#", // You can link to a roles page if you have one
           },
           {
             title: "Permissions",
@@ -201,16 +195,12 @@ export default function Dashboard() {
             Quick Actions
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Link href="/dashboard/settings">
+          <Link href={`/users/${session?.user?.id}/profile`}>
               <button className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-4 px-6 rounded-lg transition-colors text-left">
                 ⚙️ Account Settings
               </button>
             </Link>
-            <Link href="/dashboard/users">
-              <button className="w-full bg-green-50 hover:bg-green-100 text-green-700 font-semibold py-4 px-6 rounded-lg transition-colors text-left">
-                👥 Manage Users
-              </button>
-            </Link>
+            
             {isAdmin && (
               <>
                 <Link href="/admin/roles">

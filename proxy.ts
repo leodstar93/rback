@@ -9,14 +9,39 @@ const RULES: Array<{
   requirePerms?: string[];
 }> = [
   // Admin panel completo
-  { match: (p) => p.startsWith("/admin"), requireAuth: true, requirePerms: ["admin:access"] },
+  {
+    match: (p) => p.startsWith("/admin"),
+    requireAuth: true,
+    requirePerms: ["admin:access"],
+  },
 
   // Ejemplos por módulo
-  { match: (p) => p.startsWith("/admin/users"), requireAuth: true, requirePerms: ["users:read"] },
-  { match: (p) => p.startsWith("/admin/users/new"), requireAuth: true, requirePerms: ["users:write"] },
+  {
+    match: (p) => p.startsWith("/admin/users"),
+    requireAuth: true,
+    requirePerms: ["users:read"],
+  },
+  {
+    match: (p) => p.startsWith("/admin/users/new"),
+    requireAuth: true,
+    requirePerms: ["users:write"],
+  },
 
-  { match: (p) => p.startsWith("/admin/cases"), requireAuth: true, requirePerms: ["cases:read"] },
-  { match: (p) => p.startsWith("/admin/cases/create"), requireAuth: true, requirePerms: ["cases:write"] },
+  {
+    match: (p) => p.startsWith("/admin/cases"),
+    requireAuth: true,
+    requirePerms: ["cases:read"],
+  },
+  {
+    match: (p) => p.startsWith("/admin/cases/create"),
+    requireAuth: true,
+    requirePerms: ["cases:write"],
+  },
+  {
+    match: (p) => p.startsWith("/panel"),
+    requireAuth: true,
+    requirePerms: ["dashboard:access"],
+  },
 ];
 
 function firstRule(pathname: string) {
@@ -72,5 +97,5 @@ export default auth((req: NextRequest) => {
 
 // 3) Matcher: decide qué rutas pasan por proxy
 export const config = {
-  matcher: ["/admin/:path*", "/dashboard/:path*"],
+  matcher: ["/admin/:path*", "/panel/:path*"],
 };

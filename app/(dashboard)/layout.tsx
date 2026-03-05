@@ -21,6 +21,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     return null;
   }
 
+  if (status === "authenticated" && session?.user?.roles?.includes("ADMIN")) {
+    router.push("/admin");
+    return null;
+  }
+
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -33,7 +38,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/" });
+    // Check if user is admin and redirect accordingly
+    const isAdmin = session?.user?.roles?.includes("ADMIN");
+    const redirectUrl = isAdmin ? "/admin" : "/";
+    await signOut({ callbackUrl: redirectUrl });
   };
 
   return (
@@ -44,7 +52,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex flex-col h-full">
             {/* Logo/Header */}
             <div className="flex items-center justify-center h-16 px-4 bg-blue-600 flex-shrink-0">
-              <Link href="/dashboard" className="text-white text-xl font-bold">
+              <Link href="/panel" className="text-white text-xl font-bold">
                 EWall Panel
               </Link>
             </div>
@@ -52,7 +60,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             {/* Navigation */}
             <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
               <Link
-                href="/dashboard"
+                href="/panel"
                 className="flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <svg
@@ -78,7 +86,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </Link>
 
               <Link
-                href="/dashboard/users"
+                href={`/users/${session?.user?.id}`}
                 className="flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <svg
@@ -94,11 +102,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
                   />
                 </svg>
-                Users
+                Perfil
               </Link>
 
               <Link
-                href="/dashboard/settings"
+                href="/panel/settings"
                 className="flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <svg
@@ -120,7 +128,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
-                Settings
+                Feature 1
               </Link>
             </nav>
 
@@ -164,7 +172,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 {isDropdownOpen && (
                   <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                     <Link
-                      href="/dashboard/settings"
+                      href="/panel/settings"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg"
                     >
                       Profile Settings
@@ -187,7 +195,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           {/* Top Bar */}
           <header className="bg-white shadow-sm border-b px-6 py-4 flex-shrink-0">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+              <h1 className="text-2xl font-semibold text-gray-900">
+                Dashboard
+              </h1>
               <div className="flex items-center space-x-4">
                 <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
                   <svg

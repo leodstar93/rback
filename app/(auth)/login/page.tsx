@@ -29,15 +29,15 @@ export default function LoginPage() {
         setError("Invalid email or password");
       } else {
         // Actualizar la sesión para obtener roles
-          const session = await updateSession();
-          
-          console.log("Session after login:", session);
-        
+        const session = await updateSession();
+
+        console.log("Session after login:", session);
+
         // Redirigir basado en roles
         if (session?.user?.roles?.includes("ADMIN")) {
           router.push("/admin");
         } else {
-          router.push("/dashboard");
+          router.push("/panel");
         }
       }
     } catch (err) {
@@ -50,18 +50,18 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-        const result = await signIn("google", { redirect: false });
-        console.log("Google sign-in result:", result);
-      
+      const result = await signIn("google", { callbackUrl: "/panel" });
+      console.log("Google sign-in result:", result);
+
       if (result?.ok) {
         // Actualizar la sesión para obtener roles
         const session = await updateSession();
-        
+
         // Redirigir basado en roles
         if (session?.user?.roles?.includes("ADMIN")) {
           router.push("/admin");
         } else {
-          router.push("/dashboard");
+          router.push("/panel");
         }
       } else {
         setError("Failed to sign in with Google");
