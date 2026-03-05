@@ -299,7 +299,7 @@ export default function DocumentsPage() {
   return (
     <div className="flex-1 overflow-auto bg-zinc-50">
       {/* Toasts */}
-      <div className="pointer-events-none fixed right-4 top-4 z-[60] flex w-[92vw] max-w-sm flex-col gap-3">
+      <div className="pointer-events-none fixed right-4 top-4 z-60 flex w-[92vw] max-w-sm flex-col gap-3">
         {toasts.map((t) => (
           <div
             key={t.id}

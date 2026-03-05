@@ -9,8 +9,8 @@ const envSchema = z.object({
   // database connection string used by Prisma
   DATABASE_URL: z.string().url(),
 
-  // secret used by NextAuth (if you end up using it)
-  NEXTAUTH_SECRET: z.string().min(1),
+  // secret used by NextAuth (NextAuth v5 uses AUTH_SECRET)
+  AUTH_SECRET: z.string().min(1),
 
   // port to run the server on (for non‑Vercel deployments)
   PORT: z.string().default("3000"),

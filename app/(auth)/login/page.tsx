@@ -50,25 +50,11 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      const result = await signIn("google", { callbackUrl: "/panel" });
-      console.log("Google sign-in result:", result);
-
-      if (result?.ok) {
-        // Actualizar la sesión para obtener roles
-        const session = await updateSession();
-
-        // Redirigir basado en roles
-        if (session?.user?.roles?.includes("ADMIN")) {
-          router.push("/admin");
-        } else {
-          router.push("/panel");
-        }
-      } else {
-        setError("Failed to sign in with Google");
-      }
+      // signIn with callbackUrl will handle the redirect automatically
+      // No need to check result as NextAuth will redirect on success
+      await signIn("google", { callbackUrl: "/panel" });
     } catch (err) {
       setError("Failed to sign in with Google");
-    } finally {
       setIsLoading(false);
     }
   };

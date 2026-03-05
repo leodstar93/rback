@@ -60,7 +60,7 @@ function hasAll(perms: string[], required: string[]) {
 }
 
 // 2) Proxy con auth() (Auth.js v5)
-export default auth((req: NextRequest) => {
+export default auth((req) => {
   const { pathname } = req.nextUrl;
 
   // ignora assets internos

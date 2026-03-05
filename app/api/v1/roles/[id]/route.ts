@@ -56,7 +56,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
 
@@ -66,7 +66,7 @@ export async function PUT(
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const { description } = await request.json();
 
     const role = await prisma.role.update({
@@ -107,7 +107,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
 
@@ -117,7 +117,7 @@ export async function DELETE(
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Get the role
     const role = await prisma.role.findUnique({
@@ -133,7 +133,7 @@ export async function DELETE(
     if (role.name === "ADMIN") {
       return Response.json(
         { error: "Cannot delete ADMIN role" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -143,7 +143,7 @@ export async function DELETE(
         {
           error: `Cannot delete role with ${role._count.users} assigned user(s). Remove the role from all users first.`,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
