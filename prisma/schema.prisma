@@ -22,7 +22,7 @@ model User {
 
   // RBAC
   roles         UserRole[]
-
+  
   // Documents
   documents     Document[]
 }
@@ -97,14 +97,17 @@ model RolePermission {
 }
 
 model Document {
-  id        String   @id @default(cuid())
-  name      String
-  fileName  String
-  fileSize  Int
-  fileType  String
-  fileUrl   String
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  fileName    String
+  fileUrl     String
+  fileSize    Int      // in bytes
+  fileType    String   // mime type
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
 }

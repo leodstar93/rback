@@ -1,0 +1,79 @@
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
+import { NextRequest } from "next/server";
+
+// POST - Upload a new document
+export async function POST(request: NextRequest) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const formData = await request.formData();
+    const file = formData.get("file") as File;
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+
+    if (!file) {
+      return Response.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    if (!name || name.trim().length === 0) {
+      return Response.json(
+        { error: "Document name is required" },
+        { status: 400 }
+      );
+    }
+
+    // In a real app, you would upload the file to cloud storage (S3, Cloudinary, etc.)
+    // For now, we'll just store the file information in the database
+    // You'll need to implement actual file storage based on your requirements
+
+    // Create document record in database
+    const document = await prisma.document.create({
+      data: {
+        name: name.trim(),
+        description: description || null,
+        fileName: file.name,
+        fileUrl: `/uploads/${Date.now()}-${file.name}`, // Placeholder URL
+        fileSize: file.size,
+        fileType: file.type,
+        userId: session.user.id,
+      },
+    });
+
+    return Response.json(document, { status: 201 });
+  } catch (error) {
+    console.error("Error uploading document:", error);
+    return Response.json(
+      { error: "Failed to upload document" },
+      { status: 500 }
+    );
+  }
+}
+
+// GET - Fetch user's documents
+export async function GET(request: NextRequest) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const documents = await prisma.document.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return Response.json({ documents });
+  } catch (error) {
+    console.error("Error fetching documents:", error);
+    return Response.json(
+      { error: "Failed to fetch documents" },
+      { status: 500 }
+    );
+  }
+}

@@ -1,5 +1,5 @@
 import { requirePermission } from "@/lib/rbac-guard";
-import DocumentClient from "../../../features/document/client";
+import DocumentClient from "../../../features/documents/client";
 import { redirect } from "next/navigation";
 
 export default async function DocumentPage() {
