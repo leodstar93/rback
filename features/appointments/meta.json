@@ -1,7 +1,0 @@
-{
-  "label": "Appointments",
-  "section": "Medical",
-  "order": 3,
-  "icon": "Calendar",
-  "permission": "appointments:read"
-}
