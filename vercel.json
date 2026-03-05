@@ -8,7 +8,6 @@
       "value": "production"
     }
   },
-  "envPrefix": "",
   "regions": ["bom1"],
   "functions": {
     "api/**/*.ts": {
