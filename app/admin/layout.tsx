@@ -173,8 +173,8 @@ export default function AdminLayout({ children }: DashboardLayoutProps) {
 
               <div className="mt-2 space-y-1">
                 <Link
-                  href="/admin/documents"
-                  className={navItemClass("/admin/documents")}
+                  href="/admin/features/documents"
+                  className={navItemClass("/admin/features/documents")}
                 >
                   <span className="h-2 w-2 rounded-full bg-current opacity-40" />
                   Documents
@@ -229,7 +229,11 @@ export default function AdminLayout({ children }: DashboardLayoutProps) {
                 {userMenuOpen && (
                   <div className="absolute bottom-full left-0 right-0 mb-2 rounded-2xl border bg-white shadow-lg overflow-hidden">
                     <Link
-                      href={`/users/${session?.user?.id}`}
+                      href={
+                        session?.user?.roles?.includes("ADMIN")
+                          ? `/admin/users/${session?.user?.id}`
+                          : `/users/${session?.user?.id}`
+                      }
                       className="block px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-50"
                       onClick={() => setUserMenuOpen(false)}
                     >

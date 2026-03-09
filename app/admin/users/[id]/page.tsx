@@ -32,6 +32,7 @@ export default function UserDetailPage() {
 
   const [editingRoles, setEditingRoles] = useState(false);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   const isAdmin = !!session?.user?.roles?.includes("ADMIN");
 
@@ -52,9 +53,9 @@ export default function UserDetailPage() {
         ]);
 
         if (uRes.ok) {
-          const data = await uRes.json();
+          const data: UserDetail = await uRes.json();
           setUser(data);
-          setSelectedRoles(data.roles.map((r: any) => r.role.id));
+          setSelectedRoles(data.roles.map((r) => r.role.id));
         } else {
           setUser(null);
         }
@@ -110,6 +111,40 @@ export default function UserDetailPage() {
     } catch (err) {
       console.error(err);
       alert("Error deleting user");
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!userId || !user) return;
+    if (!user.email) {
+      alert("Cannot send reset email because this user has no email address.");
+      return;
+    }
+
+    const confirmed = confirm(
+      `Generate a temporary password and send it to ${user.email}?`,
+    );
+    if (!confirmed) return;
+
+    try {
+      setIsResettingPassword(true);
+      const res = await fetch(`/api/v1/users/${userId}/password`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "reset-and-email" }),
+      });
+
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(body.error || "Failed to reset password");
+      }
+
+      alert(body.message || "Temporary password sent to user email.");
+    } catch (err) {
+      console.error(err);
+      alert(err instanceof Error ? err.message : "Error resetting password");
+    } finally {
+      setIsResettingPassword(false);
     }
   };
 
@@ -218,6 +253,19 @@ export default function UserDetailPage() {
               >
                 ← Back
               </Link>
+
+              <button
+                onClick={handleResetPassword}
+                disabled={isResettingPassword || !user.email}
+                title={
+                  user.email
+                    ? "Generate temporary password and send by email"
+                    : "User email is required"
+                }
+                className="inline-flex items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-800 shadow-sm hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isResettingPassword ? "Resetting..." : "Reset password"}
+              </button>
 
               <button
                 onClick={handleDelete}
@@ -357,7 +405,7 @@ export default function UserDetailPage() {
                     onClick={() => {
                       setEditingRoles(false);
                       // optional: reset selection to server state if user cancels
-                      setSelectedRoles(user.roles.map((r: any) => r.role.id));
+                      setSelectedRoles(user.roles.map((r) => r.role.id));
                     }}
                     className="inline-flex items-center justify-center rounded-xl border bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm hover:bg-zinc-50"
                   >
@@ -404,6 +452,32 @@ export default function UserDetailPage() {
               >
                 Delete user
               </button>
+            </div>
+
+            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+              <p className="text-sm font-medium text-amber-900">
+                Password reset
+              </p>
+              <p className="mt-1 text-sm text-amber-800">
+                Generate a temporary password and send it to the user email.
+              </p>
+              <button
+                onClick={handleResetPassword}
+                disabled={isResettingPassword || !user.email}
+                title={
+                  user.email
+                    ? "Send temporary password by email"
+                    : "User email is required"
+                }
+                className="mt-3 inline-flex items-center justify-center rounded-xl border border-amber-300 bg-white px-4 py-2 text-sm font-medium text-amber-900 shadow-sm hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isResettingPassword ? "Sending..." : "Reset and send email"}
+              </button>
+              {!user.email && (
+                <p className="mt-2 text-xs text-amber-700">
+                  This user account does not have an email address.
+                </p>
+              )}
             </div>
           </div>
         </div>

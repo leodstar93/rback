@@ -1,0 +1,62 @@
+const RESEND_API_URL = "https://api.resend.com/emails";
+
+type SendTemporaryPasswordEmailInput = {
+  to: string;
+  name?: string | null;
+  temporaryPassword: string;
+};
+
+function requiredEnv(name: string) {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    throw new Error(`${name} is not configured`);
+  }
+  return value;
+}
+
+export async function sendTemporaryPasswordEmail({
+  to,
+  name,
+  temporaryPassword,
+}: SendTemporaryPasswordEmailInput) {
+  const apiKey = requiredEnv("RESEND_API_KEY");
+  const from = requiredEnv("EMAIL_FROM");
+
+  const appUrl =
+    process.env.NEXTAUTH_URL?.trim() ||
+    process.env.AUTH_URL?.trim() ||
+    "http://localhost:3000";
+  const loginUrl = `${appUrl.replace(/\/+$/, "")}/login`;
+
+  const salutation = name?.trim() || "there";
+  const text = [
+    `Hi ${salutation},`,
+    "",
+    "Your account password has been reset by an administrator.",
+    `Temporary password: ${temporaryPassword}`,
+    "",
+    `Sign in at: ${loginUrl}`,
+    "After signing in, please change your password immediately.",
+  ].join("\n");
+
+  const response = await fetch(RESEND_API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      subject: "Your password has been reset",
+      text,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Failed to send email (${response.status}): ${errorText || "unknown error"}`,
+    );
+  }
+}
