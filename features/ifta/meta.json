@@ -1,0 +1,8 @@
+{
+  "label": "IFTA",
+  "section": "Operaciones",
+  "order": 20,
+  "icon": "Truck",
+  "href": "/ifta",
+  "permission": ["ifta:read"]
+}

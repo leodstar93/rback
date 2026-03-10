@@ -19,7 +19,8 @@ function titleFromPath(pathname: string | null) {
   if (pathname.startsWith("/admin/users")) return "Users";
   if (pathname.startsWith("/admin/roles")) return "Roles";
   if (pathname.startsWith("/admin/permissions")) return "Permissions";
-  if (pathname.startsWith("/admin/documents")) return "Documents";
+  if (pathname.startsWith("/admin/features/documents")) return "Documents";
+  if (pathname.startsWith("/admin/features/ifta")) return "IFTA";
   const last = pathname.split("/").filter(Boolean).pop() ?? "Admin";
   return last.charAt(0).toUpperCase() + last.slice(1);
 }
@@ -178,6 +179,13 @@ export default function AdminLayout({ children }: DashboardLayoutProps) {
                 >
                   <span className="h-2 w-2 rounded-full bg-current opacity-40" />
                   Documents
+                </Link>
+                <Link
+                  href="/admin/features/ifta"
+                  className={navItemClass("/admin/features/ifta")}
+                >
+                  <span className="h-2 w-2 rounded-full bg-current opacity-40" />
+                  IFTA
                 </Link>
                 <Link
                   href="/panel"

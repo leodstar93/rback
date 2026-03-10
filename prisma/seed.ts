@@ -2,14 +2,13 @@ import "dotenv/config";
 import bcrypt from "bcrypt";
 import { prisma } from "../lib/prisma";
 
-
 // Cambia estos valores si quieres
 const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL ?? "admin@ewall.local";
 const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? "Admin123!";
 
 const ROLES = [
   { name: "ADMIN", description: "Full access" },
-  { name: "DOCTOR", description: "Doctor access" },
+  { name: "TRUCKER", description: "Trucker access" },
   { name: "STAFF", description: "Staff access" },
   { name: "USER", description: "Regular user access" },
 ] as const;
@@ -29,6 +28,21 @@ const PERMISSIONS = [
   { key: "cases:write", description: "Create/update cases" },
   { key: "profile:access", description: "Access profile" },
   { key: "profile:write", description: "Update profile" },
+  { key: "documents:read", description: "Read documents" },
+  { key: "documents:write", description: "Upload/manage documents" },
+
+  // IFTA
+  { key: "ifta:read", description: "Read IFTA reports" },
+  { key: "ifta:write", description: "Create/update/delete IFTA reports" },
+  { key: "truck:read", description: "Read trucks" },
+  { key: "truck:write", description: "Create/update trucks" },
+  { key: "reports:read", description: "Read generated reports" },
+  { key: "reports:write", description: "Create/update generated reports" },
+  { key: "reports:generate", description: "Generate reports" },
+  { key: "reports:download", description: "Download reports" },
+
+  // Staff
+  { key: "labslips:read", description: "Read lab slips" },
 
   //admin
   { key: "admin:access", description: "Access admin" },
@@ -37,10 +51,32 @@ const PERMISSIONS = [
 // Mapa de permisos por rol (ajusta como quieras)
 const ROLE_PERMISSIONS: Record<(typeof ROLES)[number]["name"], string[]> = {
   ADMIN: PERMISSIONS.map((p) => p.key), // todo
-  DOCTOR: ["cases:read", "cases:write", "labslips:read", "labslips:write"],
+  TRUCKER: [
+    "ifta:read",
+    "ifta:write",
+    "truck:read",
+    "truck:write",
+    "reports:read",
+    "reports:write",
+    "reports:generate",
+    "reports:download",
+  ],
   STAFF: ["cases:read", "labslips:read"],
   USER: ["profile:access", "profile:write", "dashboard:access"],
 };
+
+const JURISDICTIONS = [
+  { code: "AZ", name: "Arizona" },
+  { code: "CA", name: "California" },
+  { code: "CO", name: "Colorado" },
+  { code: "ID", name: "Idaho" },
+  { code: "NM", name: "New Mexico" },
+  { code: "NV", name: "Nevada" },
+  { code: "OR", name: "Oregon" },
+  { code: "TX", name: "Texas" },
+  { code: "UT", name: "Utah" },
+  { code: "WA", name: "Washington" },
+] as const;
 
 async function upsertRoles() {
   for (const r of ROLES) {
@@ -93,6 +129,19 @@ async function syncRolePermissions() {
   });
 }
 
+async function upsertJurisdictions() {
+  for (const jurisdiction of JURISDICTIONS) {
+    await prisma.jurisdiction.upsert({
+      where: { code: jurisdiction.code },
+      update: { name: jurisdiction.name },
+      create: {
+        code: jurisdiction.code,
+        name: jurisdiction.name,
+      },
+    });
+  }
+}
+
 async function upsertAdminUser() {
   // Crear o actualizar el usuario admin
   const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
@@ -128,6 +177,7 @@ async function main() {
   await upsertRoles();
   await upsertPermissions();
   await syncRolePermissions();
+  await upsertJurisdictions();
 
   const admin = await upsertAdminUser();
 

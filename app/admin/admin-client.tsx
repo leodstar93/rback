@@ -79,28 +79,35 @@ export default async function AdminPageClient() {
   ] as const;
 
   const quickActions = [
-    {
-      title: "Manage users",
-      desc: "Invite, assign roles, and control access.",
-      icon: "👥",
-      href: "/admin/users",
-      tone: "blue",
-    },
-    {
-      title: "Manage roles",
-      desc: "Create roles and keep permissions organized.",
-      icon: "🎭",
-      href: "/admin/roles",
-      tone: "purple",
-    },
-    {
-      title: "Manage permissions",
-      desc: "Define fine-grained access rules by module.",
-      icon: "🔑",
-      href: "/admin/permissions",
-      tone: "orange",
-    },
-  ] as const;
+  {
+    title: "Manage users",
+    desc: "Invite, assign roles, and control access.",
+    icon: "👥",
+    href: "/admin/users",
+    tone: "blue",
+  },
+  {
+    title: "Manage roles",
+    desc: "Create roles and keep permissions organized.",
+    icon: "🎭",
+    href: "/admin/roles",
+    tone: "purple",
+  },
+  {
+    title: "Manage permissions",
+    desc: "Define fine-grained access rules by module.",
+    icon: "🔑",
+    href: "/admin/permissions",
+    tone: "orange",
+  },
+  {
+    title: "Review IFTA reports",
+    desc: "Audit user IFTA filing status and totals.",
+    icon: "🚚",
+    href: "/admin/features/ifta",
+    tone: "green",
+  },
+] as const;
 
   return (
     <div className="flex-1 overflow-auto bg-zinc-50">
