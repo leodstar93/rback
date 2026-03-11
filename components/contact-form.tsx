@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import styles from "@/app/(public)/public.module.css";
+import styles from "@/app/(public)/public.styles";
 
 type ContactFormState = {
   name: string;
@@ -179,3 +179,4 @@ export function ContactForm() {
     </form>
   );
 }
+

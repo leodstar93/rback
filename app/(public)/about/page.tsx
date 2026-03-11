@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import styles from "../public.module.css";
+import styles from "../public.styles";
 
 export const metadata: Metadata = {
   title: "About Us | Truckers Unidos",
@@ -57,3 +57,4 @@ export default function AboutPage() {
     </div>
   );
 }
+

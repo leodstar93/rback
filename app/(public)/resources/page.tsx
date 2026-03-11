@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import styles from "../public.module.css";
+import styles from "../public.styles";
 
 export const metadata: Metadata = {
   title: "Resources | Truckers Unidos",
@@ -43,3 +43,4 @@ export default function ResourcesPage() {
     </div>
   );
 }
+

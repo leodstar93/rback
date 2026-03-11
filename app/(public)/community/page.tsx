@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import styles from "../public.module.css";
+import styles from "../public.styles";
 
 export const metadata: Metadata = {
   title: "Community | Truckers Unidos",
@@ -55,3 +55,4 @@ export default function CommunityPage() {
     </div>
   );
 }
+

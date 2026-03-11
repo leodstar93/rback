@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ContactForm } from "@/components/contact-form";
-import styles from "../public.module.css";
+import styles from "../public.styles";
 
 export const metadata: Metadata = {
   title: "Contact | Truckers Unidos",
@@ -42,3 +42,4 @@ export default function ContactPage() {
     </div>
   );
 }
+

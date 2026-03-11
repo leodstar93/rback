@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import styles from "./public.module.css";
+import styles from "./public.styles";
 
 export const metadata: Metadata = {
   title: "Truckers Unidos | Supporting Trucking Businesses Across America",
@@ -195,3 +195,4 @@ export default function HomePage() {
     </div>
   );
 }
+

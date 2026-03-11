@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import styles from "../public.module.css";
+import styles from "../public.styles";
 
 export const metadata: Metadata = {
   title: "Donate | Truckers Unidos",
@@ -40,3 +40,4 @@ export default function DonatePage() {
     </div>
   );
 }
+

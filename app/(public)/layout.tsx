@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Barlow_Condensed, Lora, Source_Sans_3 } from "next/font/google";
-import styles from "./public.module.css";
+import "./public.css";
+import styles from "./public.styles";
 
 const headingFont = Barlow_Condensed({
   subsets: ["latin"],
@@ -189,3 +190,4 @@ export default function PublicLayout({
     </div>
   );
 }
+
