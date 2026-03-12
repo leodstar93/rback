@@ -5,6 +5,43 @@ import bcrypt from "bcrypt";
 import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 
+const GOOGLE_DEFAULT_ROLE_NAMES = ["TRUCKER", "USER"] as const;
+
+async function ensureGoogleDefaultRoles(userId?: string, email?: string | null) {
+  if (!userId && !email) return;
+
+  const normalizedEmail = email ?? undefined;
+  const dbUser = userId
+    ? await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, roles: { select: { roleId: true } } },
+      })
+    : normalizedEmail
+      ? await prisma.user.findUnique({
+          where: { email: normalizedEmail },
+          select: { id: true, roles: { select: { roleId: true } } },
+        })
+      : null;
+
+  if (!dbUser) return;
+  if (dbUser.roles.length > 0) return;
+
+  const defaultRoles = await prisma.role.findMany({
+    where: { name: { in: [...GOOGLE_DEFAULT_ROLE_NAMES] } },
+    select: { id: true },
+  });
+
+  if (defaultRoles.length === 0) return;
+
+  await prisma.userRole.createMany({
+    data: defaultRoles.map((role) => ({
+      userId: dbUser.id,
+      roleId: role.id,
+    })),
+    skipDuplicates: true,
+  });
+}
+
 export const { auth, handlers, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
@@ -34,6 +71,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
+      if (account?.provider === "google") {
+        await ensureGoogleDefaultRoles(user.id as string | undefined, user.email);
+      }
+
       // Handle account linking for existing users
       if (account && profile && user.email) {
         const existingUser = await prisma.user.findUnique({
